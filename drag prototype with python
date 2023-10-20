@@ -1,0 +1,98 @@
+%pylab inline
+import math
+rho= 1.293 #kg/m³
+C_d=0.295
+v_0=100 #m/s
+m=5 #kg
+d=7.82*10**(-3) #m
+A=0.25 #m²
+g=9.81 #m/s²
+dt=0.001 #delta T
+print("With air resistance: ")
+hh, tt, vv = [], [], []
+hu, tu, vu =[], [], []
+T=0
+V2=0 #velocity while falling
+V_Terminal=sqrt(m*g/(rho*C_d*(A/2))) #m*g = rho*C_d*(A/2)*V**2 -> V= sqrt(m*g/(rho*C_d*(A/2)))
+V1=v_0 #velocity while traveling upwards
+T_up_drag=0 #time when the bullet reaches max height, with air resistance
+T_land=0 #time when the bullet lands
+h_max=0 #the maximum height the bullet travels
+h_terminal=0 #height when the falling bullet reaches terminal velocity
+h1=0 #height while the bullet is travelling upwards
+h2=0 #height while the bullet is falling until it reaches terminal velocity
+V3=0
+h3=0 #height after it has reached terminal velocity
+target=170
+displacement=0
+for n in range(1, 90):
+  T_up_drag=0 #time when the bullet reaches max height, with air resistance
+  T_land=0 #time when the bullet lands
+  h_max=0 #the maximum height the bullet travels
+  h_terminal=0 #height when the falling bullet reaches terminal velocity
+  h1=0 #height while the bullet is travelling upwards
+  h2=0 #height while the bullet is falling until it reaches terminal velocity
+  V3=0
+  h3=0 #height after it has reached terminal velocity
+  displacement=0
+  T=0
+  V2=v_0*sin(n/180*math.pi)
+  while(T_land==0):
+    if(h3<0 or h2<0): #We land when our height goes below 0
+        T_land=T
+    T = T + dt
+    if (V2>=0):
+        drag = rho * C_d * (A / 2) * V2**2
+        a = -g - drag / m
+        dv = a * dt
+        V2 = V2 + dv
+        dh = V2 * dt
+        h1 = h1 + dh
+        vu.append(V2)
+        tu.append(T)
+        hu.append(h1)
+    if(V2<0 and V3==0): #When the velocity would become negative, we have reached the top
+      T_up_drag=T
+      h_max=h1
+      h2=h_max
+    if (T_up_drag!=0 and h_terminal==0):
+        drag = rho * C_d * (A / 2) * V3**2
+        a = g - (drag / m)
+        dv = a * dt
+        V3 = V3 + dv
+        dh = V3 * dt
+        h2 = h2 - dh
+        vu.append(V3)
+        tu.append(T)
+        hu.append(h2)
+        if (a<0.001): #If our acceleration is only 0.001, we have basically reached terminal velocity (Given the excercise, its precise enough)
+          h_terminal = h2
+          h3=h_terminal
+    if(h_terminal!=0):
+        h3 = h3 - V_Terminal * dt
+        vu.append(V_Terminal)
+        tu.append(T)
+        hu.append(h3)
+  displacement=0
+  V1=v_0*cos(n/180*math.pi)
+  T=0
+  while(T<T_land):
+    T = T + dt
+    counter = counter + 1
+    if (V1>=0):
+        drag = rho * C_d * (A / 2) * (V1)**2
+        a = - drag / m
+        dv = a * dt
+        V1 = V1 + dv
+        displacement = displacement + V1 * dt
+        vv.append(V1)
+        tt.append(T)
+        hh.append(displacement)
+  print(n, " ",displacement)
+#  plot(tt, hh, label="With air resistance")
+title("Height-Time Curves")
+#legend() #Using legend() added ~30s to the execution for me, so I comment it out
+xlabel("Time (s)")
+ylabel("Height (m)")
+grid()
+show()
