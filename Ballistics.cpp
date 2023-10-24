@@ -54,11 +54,11 @@ void calculations(double target, double wind, double v0, double m, double A)
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
-    double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.0001 is sufficiently small.*/
+    double dt = 0.001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
     double drag, h1, h2, htop, hterm, ttop, tland, vx, vy, acc, displacement, t; /**/
-    for (int i = 0; i <= 90; i += 1)
+    for (int i = 1; i <= 90; i += 1)
     {
-        h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = v0 * cos(i * M_PI / 180), vy = v0 * sin(M_PI / 180), displacement = 0, t = 0;
+        h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = v0 * cos(i * M_PI / 180), vy = v0 * sin(i * M_PI / 180), displacement = 0, t = 0;
         while (tland == 0)
         {
             if (h2 < 0) /*If during falling we encounter a negative height, we have touched the ground*/
