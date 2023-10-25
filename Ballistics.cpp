@@ -64,14 +64,14 @@ void calculations(double target, double wind, double v0, double m, double A)
             if (h2 < 0) /*If during falling we encounter a negative height, we have touched the ground*/
                 tland = t;
             t += dt;
-            if (vy > 0) /*This runs until the projectile gets slowed down below 0*/
+            if (vy > 0 && ttop==0) /*This runs until the projectile gets slowed down below 0*/
             {
                 drag = rho * Cd * A * 0.5 * pow(vy, 2);
                 acc = -1 * (g + drag/m); /*The acceleration is calculated from the sum of the gravitational acc. and the acc. from the drag force*/
                 vy += acc * dt;
                 h1 += vy * dt;
             }
-            else if (vy < 0 && htop == 0) /*If this is true, we have reached the top for the first time during a flight*/
+            else if (vy < 0 && ttop == 0) /*If this is true, we have reached the top for the first time during a flight*/
             {
                 ttop = t;
                 htop = h1;
@@ -101,8 +101,10 @@ void calculations(double target, double wind, double v0, double m, double A)
             t += dt;
             if (vx >= 0)
             {
-                drag = rho * Cd * A * 0.5 * pow(vx-wind, 2);/*We need to subtract the wind, because the user enters a negative value in case of headwind, and a positive in the case of tailwind,
-                                                            however if there is a headwind, our relative velocity to the wind adds up, and with a tailwind it gets subtracted from the velocity of the wind*/
+                drag = rho * Cd * A * 0.5 * pow(vx-wind, 2);/*We need to subtract the wind, because 
+                                                            the user enters a negative value in case of headwind, 
+                                                            and a positive in the case of tailwind. However if there is a headwind, 
+                                                            our relative velocity to the wind adds up, and with a tailwind it gets subtracted from the velocity of the wind*/
                 acc = -1 * drag / m;
                 vx += acc * dt;
                 displacement += vx * dt;
