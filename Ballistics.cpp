@@ -137,7 +137,7 @@ void calculations(double target, double wind, double v0, double m, double A, dou
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double drag, h1, h2, htop, hterm, ttop, tland, vx, vy, acc, displacement, t, min1=target, min2=target; /**/
+    double min1=target, min2=target; 
     for (int i = 1; i <= 90; i += 1)
     {
         distance(i, target, wind, v0, m, A, &angle1, &angle2, &min1, &min2);
