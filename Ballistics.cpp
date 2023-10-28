@@ -183,9 +183,20 @@ int main()
         case 5: printf("Please enter the starting velocity in m/s!\n");
             v0 = is_positive();
             break;
-        case 6: end = sure(); /**Depending on the users choice, either the program ends, and the calculations begin, or it just returns to the menu**/
-            if (end == 0)
-                calculations(target, wind, v0, m, A, &angle1, &angle2);
+        case 6: /*end = sure();*/ /**Depending on the users choice, either the program ends, and the calculations begin, or it just returns to the menu**/
+            if (sure() == 0)
+            {
+                if (target == 0)
+                    printf("Please first enter the distance to the target!\n");
+                if (m == 0)
+                    printf("Please first enter the mass!\n");
+                if (A == 0)
+                    printf("Please first enter the area!\n");
+                if (v0 == 0)
+                    printf("Please first enter the muzzle velocity!\n");
+                if(target !=0 && m!=0 && A!=0 && v0!=0)
+                    calculations(target, wind, v0, m, A, &angle1, &angle2);
+            }
             break;
         case 7: end = sure(); /**Depending on the users choice, either the program ends, or it just returns to the menu**/
             break;
