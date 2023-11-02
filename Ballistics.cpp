@@ -90,12 +90,13 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
             acc = g - (drag / m);
             vy += acc * dt;
             h2 -= vy * dt;
-            if (acc < 0.000001)/*If we reach an acceleration of 0.000001, we are safe to say that we have reached a point where further acceleration is negligible*/
+            if (acc < 0.000001)/*If we reach an acceleration of 0.000001, we are safe to say that we have reached a point where further acceleration is negligible - from there
+                               the change in speed is so little, that we can ignore that*/
             {
                 hterm = h2;
             }
         }
-        else if (hterm != 0)/*We will use this after we reach terminal velocity, as then we no longer accelerate*/
+        else if (hterm != 0)/*We will use this after we reach terminal velocity, as then we no longer accelerate but fall with the constant speed of terminal velocity*/
         {
             h2 -= vterminal * dt;
         }
@@ -157,7 +158,7 @@ int main()
     double v0 = 0; /**The starting velocity, we will ask the user to enter it**/
     double m = 0; /**The mass of the projectile, we will ask the user to enter it**/
     double A = 0; /**The cross sectional area of the projectile, we will ask the user to enter it**/
-    double angle1 = 0, angle2 = 0;
+    double angle1 = 0, angle2 = 0; /**The two angles for the calculation **/
 
     /**The main menu that is being displayed**/
     while (end == 1)
