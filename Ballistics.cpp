@@ -54,15 +54,15 @@ double difference(double a, double b) /*We will use this function to calculate t
     return fabs(a - b);
 }
 
-void distance(int i, double target, double wind, double v0, double m, double A, double **angle1, double **angle2, double *min1, double *min2)
+void distance(int i, double target, double wind, double v0, double m, double A, double **angle1, double *min1, int *found, double *prev_diff)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double drag, h1, h2, htop, hterm, ttop, tland, vx, vy, acc, displacement, t;
-    h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = v0 * cos(i * M_PI / 180), vy = v0 * sin(i * M_PI / 180), displacement = 0, t = 0;
+    double drag, h1, h2, htop, hterm, ttop, tland, vx, vy, acc, displacement, difference, t;
+    h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = v0 * cos(i * M_PI / 180), vy = v0 * sin(i * M_PI / 180), displacement = 0, difference = 0, t = 0;
     while (tland == 0)
     {
         if (h2 < 0) /*If during falling we encounter a negative height, we have touched the ground*/
@@ -118,16 +118,18 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
         }
     }
     printf("%d: %f\n", i, displacement);
-    if (difference(displacement, target) < *min1)
+    difference = target - displacement;
+    if (fabs(difference) < *min1 )
     {
-        *min1 = difference(displacement, target);
+        *min1 = fabs(difference);
         **angle1 = i;
+        if (displacement < target)
+            **angle1 = -1 * (**angle1);
     }
-    else if (difference(displacement, target) < *min2)
-    {
-        *min2 = difference(displacement, target);
-        **angle2 = i;
-    }
+    if ((difference < 0 && *prev_diff >=0) ||(difference >=0 && *prev_diff <0))
+        *found = 1;
+    *prev_diff = difference;
+
 }
 
 
@@ -138,11 +140,15 @@ void calculations(double target, double wind, double v0, double m, double A, dou
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double min1=target, min2=target; 
-    for (int i = 1; i <= 90; i += 1)
+    double min1 = target, prev_diff = 0; 
+    int found = 0;
+    for (int i = 1; found==0; i += 1)
     {
-        distance(i, target, wind, v0, m, A, &angle1, &angle2, &min1, &min2);
+        distance(i, target, wind, v0, m, A, &angle1, &min1, &found, &prev_diff);
     }
+    found = 0, min1 = target;
+    for(int i=*angle1+1; found==0; i+=1)
+        distance(i, target, wind, v0, m, A, &angle2, &min1, &found, &prev_diff);
     printf("%f, %f\n", *angle1, *angle2);
 }
 
