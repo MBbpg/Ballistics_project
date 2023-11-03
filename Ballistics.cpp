@@ -54,7 +54,7 @@ double difference(double a, double b) /*We will use this function to calculate t
     return fabs(a - b);
 }
 
-void distance(int i, double target, double wind, double v0, double m, double A, double **angle1, double *min1, int *found, double *prev_diff)
+void distance(int i, double target, double wind, double v0, double m, double A, double **angle1, double *min1, int *found, double *prev_diff, double *prev_dist)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
@@ -126,9 +126,15 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
         if (displacement < target)
             **angle1 = -1 * (**angle1);
     }
-    if ((difference < 0 && *prev_diff >=0) ||(difference >=0 && *prev_diff <0))
+    /*The first part will be true if we "overshot" the target: the previous was closer to us, but the current is further than the target
+    The second part will be true if we were beyond the target with the previous shot, and the current shot is closer than the target
+    The third part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target */
+    if ((difference < 0 && *prev_diff >= 0) || (difference >= 0 && *prev_diff < 0))
         *found = 1;
+    else if ((fabs(displacement) <= fabs(*prev_dist) && (difference >= 0 && *prev_diff >= 0)))
+        *found = 2;
     *prev_diff = difference;
+    *prev_dist = displacement;
 
 }
 
@@ -140,15 +146,18 @@ void calculations(double target, double wind, double v0, double m, double A, dou
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double min1 = target, prev_diff = 0; 
+    double min1 = target, prev_diff = target, prev_dist=0; 
     int found = 0;
     for (int i = 1; found==0; i += 1)
     {
-        distance(i, target, wind, v0, m, A, &angle1, &min1, &found, &prev_diff);
+        distance(i, target, wind, v0, m, A, &angle1, &min1, &found, &prev_diff, &prev_dist);
     }
+    if (found == 1) /*If we found an angle that is not the highest angle*/
+    {
     found = 0, min1 = target;
-    for(int i=*angle1+1; found==0; i+=1)
-        distance(i, target, wind, v0, m, A, &angle2, &min1, &found, &prev_diff);
+    for(int i=(int)fabs(*angle1)+1; found==0; i+=1)
+        distance(i, target, wind, v0, m, A, &angle2, &min1, &found, &prev_diff, &prev_dist);
+    }
     printf("%f, %f\n", *angle1, *angle2);
 }
 
