@@ -57,7 +57,8 @@ double is_positive() /*We will use this function to check whether or not the val
 }
 
 
-
+/*This large function has two main purposes: Firstly, it calculates the angle for the given distance using physics, then it updates the "found" variable, 
+telling us the relation between the current shot, and the previous one, so that we can identify whether it's the first angle, the second, or the only one */
 void distance(double i, starting_data start_data, double **angle, double *min, int *found, double *prev_diff, double *prev_dist)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
@@ -104,7 +105,6 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
         {
             h2 -= vterminal * dt;
         }
-
     }
     t = 0;
     while (t <= tland)
@@ -140,7 +140,8 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
         *found = 2;
         **angle = i;
     }
-    /*This will be true if either we reach exactly the target, or our difference from the target is less than 0.0001 milimeters*/
+    /*This will be true if either we reach exactly the target, or our difference from the target is less than 0.0001 milimeters - only gets used in the more precise calculations (as until then
+    found will either be 0, 1 or 2*/
     else if (displacement == start_data.target || fabs(displacement-start_data.target) < 0.0000001)
     {
         *found = 3;
@@ -150,14 +151,10 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
     *prev_dist = displacement;
 }
 
-
+/*Our other large function, that uses the previous distance calculator function to go through the angles, then calculate them even more precisely. 
+The printing functions will also be called here*/
 void calculations(starting_data start_data, double *angle1, double *angle2)
 {
-    double rho = 1.293; /**The density of air, required for the calculations**/
-    double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
-    double g = 9.81; /**Gravitational acceleration, required for the calculations**/
-    double vterminal = sqrt(start_data.m * g / (rho * Cd * start_data.A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
-    double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
     double min = start_data.target, prev_diff = start_data.target, prev_dist=0, delta=0.1, first_dist, sec_dist;
     int main_found = 0, aux_found = 0; /*We need two different variables to signal whether the target has been found, and whether it's one or two angles*/
     for (int i = 0; main_found==0; i += 1)
@@ -261,8 +258,6 @@ int main()
         }
     }
     printf("Thank you for using the program!\n");
-
-
 
     return 0;
 }
