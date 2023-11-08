@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+typedef struct {
+    double target; /*The distance of the target, we will ask the user to enter it*/
+    double wind; /*The speed of wind, we will ask the user to enter it*/
+    double v0; /**The starting velocity, we will ask the user to enter it**/
+    double m; /**The mass of the projectile, we will ask the user to enter it**/
+    double A; /**The cross sectional area of the projectile, we will ask the user to enter it**/
+} starting_data;
+
 int sure(void) /**A function that asks the user whether or not he wants to commit (like when he wants to exit or launch the calculations)**/
 {
     int choice, end = 0; /**The variable that stores the users choice, and the variable that keeps the algorithm running until
@@ -48,21 +56,17 @@ double is_positive() /*We will use this function to check whether or not the val
     return data;
 }
 
-double difference(double a, double b) /*We will use this function to calculate the difference between the displacement 
-                                      of the projectile with a given angle, and the target distance*/
-{
-    return fabs(a - b);
-}
 
-void distance(int i, double target, double wind, double v0, double m, double A, double **angle1, double *min1, int *found, double *prev_diff, double *prev_dist)
+
+void distance(double i, starting_data start_data, double **angle, double *min, int *found, double *prev_diff, double *prev_dist)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
-    double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
+    double vterminal = sqrt(start_data.m * g / (rho * Cd * start_data.A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
     double drag, h1, h2, htop, hterm, ttop, tland, vx, vy, acc, displacement, difference, t;
-    h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = v0 * cos(i * M_PI / 180), vy = v0 * sin(i * M_PI / 180), displacement = 0, difference = 0, t = 0;
+    h1 = 0, h2 = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = start_data.v0 * cos(i * M_PI / 180), vy = start_data.v0 * sin(i * M_PI / 180), displacement = 0, difference = 0, t = 0;
     while (tland == 0)
     {
         if (h2 < 0) /*If during falling we encounter a negative height, we have touched the ground*/
@@ -72,8 +76,8 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
             tland = t;
         if (vy > 0 && ttop == 0) /*This runs until the projectile gets slowed down below 0*/
         {
-            drag = rho * Cd * A * 0.5 * pow(vy, 2);
-            acc = -1 * (g + drag / m); /*The acceleration is calculated from the sum of the gravitational acc. and the acc. from the drag force*/
+            drag = rho * Cd * start_data.A * 0.5 * pow(vy, 2);
+            acc = -1 * (g + drag / start_data.m); /*The acceleration is calculated from the sum of the gravitational acc. and the acc. from the drag force*/
             vy += acc * dt;
             h1 += vy * dt;
         }
@@ -86,8 +90,8 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
         }
         else if (ttop != 0 && hterm == 0) /*If this is true, we have reached the top before, but we haven't reached terminal velocity yet*/
         {
-            drag = rho * Cd * A * 0.5 * pow(vy, 2);
-            acc = g - (drag / m);
+            drag = rho * Cd * start_data.A * 0.5 * pow(vy, 2);
+            acc = g - (drag / start_data.m);
             vy += acc * dt;
             h2 -= vy * dt;
             if (acc < 0.000001)/*If we reach an acceleration of 0.000001, we are safe to say that we have reached a point where further acceleration is negligible - from there
@@ -108,27 +112,27 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
         t += dt;
         if (vx >= 0)
         {
-            drag = rho * Cd * A * 0.5 * pow(vx - wind, 2);/*We need to subtract the wind, because
+            drag = rho * Cd * start_data.A * 0.5 * pow(vx - start_data.wind, 2);/*We need to subtract the wind, because
                                                         the user enters a negative value in case of headwind,
                                                         and a positive in the case of tailwind. However if there is a headwind,
                                                         our relative velocity to the wind adds up, and with a tailwind it gets subtracted from the velocity of the wind*/
-            acc = -1 * drag / m;
+            acc = -1 * drag / start_data.m;
             vx += acc * dt;
             displacement += vx * dt;
         }
     }
-    printf("%d: %f\n", i, displacement);
-    difference = target - displacement;
-    if (fabs(difference) < *min1 )
+    printf("%f: %f\n", i, displacement);
+    difference = start_data.target - displacement;
+    if (fabs(difference) < *min )
     {
-        *min1 = fabs(difference);
-        **angle1 = i;
-        if (displacement < target)
-            **angle1 = -1 * (**angle1);
+        *min = fabs(difference);
+        **angle = i;
+        /*if (displacement < target)
+            **angle1 = -1 * (**angle1);*/
     }
     /*The first part will be true if we "overshot" the target: the previous was closer to us, but the current is further than the target
     The second part will be true if we were beyond the target with the previous shot, and the current shot is closer than the target
-    The third part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target */
+    The third (else if) part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target */
     if ((difference < 0 && *prev_diff >= 0) || (difference >= 0 && *prev_diff < 0))
         *found = 1;
     else if ((fabs(displacement) <= fabs(*prev_dist) && (difference >= 0 && *prev_diff >= 0)))
@@ -139,26 +143,59 @@ void distance(int i, double target, double wind, double v0, double m, double A, 
 }
 
 
-void calculations(double target, double wind, double v0, double m, double A, double *angle1, double *angle2)
+void calculations(starting_data start_data, double *angle1, double *angle2)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
-    double vterminal = sqrt(m * g / (rho * Cd * A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
+    double vterminal = sqrt(start_data.m * g / (rho * Cd * start_data.A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double min1 = target, prev_diff = target, prev_dist=0; 
+    double min = start_data.target, prev_diff = start_data.target, prev_dist=0, delta=0.1;
     int found = 0;
     for (int i = 1; found==0; i += 1)
     {
-        distance(i, target, wind, v0, m, A, &angle1, &min1, &found, &prev_diff, &prev_dist);
+        distance(i, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
     }
     if (found == 1) /*If we found an angle that is not the highest angle*/
     {
-    found = 0, min1 = target;
-    for(int i=(int)fabs(*angle1)+1; found==0; i+=1)
-        distance(i, target, wind, v0, m, A, &angle2, &min1, &found, &prev_diff, &prev_dist);
+        found = 0, min = start_data.target;
+        for(int i=(int)fabs(*angle1)+1; found==0; i+=1)
+            distance(i, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
+        printf("%f, %f\n", *angle1, *angle2);
+
+        *angle2 -= 1;
+        for (int i = 0; i < 21; i++)
+        {
+            distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+            found = 0;
+            while (found == 0)
+            {
+                *angle1 += delta;
+                distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+            }
+            *angle1 -= delta;
+            delta /= 10;
+        }
     }
-    printf("%f, %f\n", *angle1, *angle2);
+    if (found == 2) /*If we did find the highest angle*/
+    {
+        printf("%f\n", *angle1);
+    }
+    *angle1 -= 1;
+    for (int i = 0; i < 21; i++)
+    {   
+        distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+        found = 0;
+        while (found == 0)
+        {
+            *angle1 += delta;
+            distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+        }
+        *angle1 -= delta;
+        delta /= 10;
+    }
+    if (prev_dist < start_data.target)
+        printf("Unable to reach target, please change some variables!\n");
 }
 
 
@@ -168,11 +205,7 @@ int main()
     printf("(You will be returned to this menu after your choices, unless you choose to exit or launch the program.)\n");
     int choice, end = 1; /**The choice of the user and the variable that keeps the algorithm running until the user decides to end
     the program, or run it**/
-    double target = 0; /*The distance of the target, we will ask the user to enter it*/
-    double wind = 0; /*The speed of wind, we will ask the user to enter it*/
-    double v0 = 0; /**The starting velocity, we will ask the user to enter it**/
-    double m = 0; /**The mass of the projectile, we will ask the user to enter it**/
-    double A = 0; /**The cross sectional area of the projectile, we will ask the user to enter it**/
+    starting_data start_data = { 0, 0, 0, 0, 0 };
     double angle1 = 0, angle2 = 0; /**The two angles for the calculation **/
 
     /**The main menu that is being displayed**/
@@ -185,33 +218,33 @@ int main()
         switch (choice)
         {
         case 1: printf("Please enter the distance of the target in meters!\n");
-            target = is_positive();
+            start_data.target = is_positive();
             break;
         case 2: printf("Please enter the speed of wind in m/s!\nEnter 0 if there is no wind, and enter a negative number to indicate headwind!\n");
-            wind = read_data();
+            start_data.wind = read_data();
             break;
         case 3: printf("Please enter the mass of the projectile in kg!\n");
-            m = is_positive();
+            start_data.m = is_positive();
             break;
         case 4: printf("Please enter the area of the projectile in m^2!\n");
-            A = is_positive();
+            start_data.A = is_positive();
             break;
         case 5: printf("Please enter the starting velocity in m/s!\n");
-            v0 = is_positive();
+            start_data.v0 = is_positive();
             break;
         case 6: /*end = sure();*/ /**Depending on the users choice, either the program ends, and the calculations begin, or it just returns to the menu**/
             if (sure() == 0)
             {
-                if (target == 0)
+                if (start_data.target == 0)
                     printf("Please first enter the distance to the target!\n");
-                if (m == 0)
+                if (start_data.m == 0)
                     printf("Please first enter the mass!\n");
-                if (A == 0)
+                if (start_data.A == 0)
                     printf("Please first enter the area!\n");
-                if (v0 == 0)
+                if (start_data.v0 == 0)
                     printf("Please first enter the muzzle velocity!\n");
-                if(target !=0 && m!=0 && A!=0 && v0!=0)
-                    calculations(target, wind, v0, m, A, &angle1, &angle2);
+                if(start_data.target !=0 && start_data.m!=0 && start_data.A!=0 && start_data.v0!=0)
+                    calculations(start_data, &angle1, &angle2);
             }
             break;
         case 7: end = sure(); /**Depending on the users choice, either the program ends, or it just returns to the menu**/
