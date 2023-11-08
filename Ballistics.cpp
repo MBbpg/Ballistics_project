@@ -126,22 +126,28 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
     if (fabs(difference) < *min )
     {
         *min = fabs(difference);
-        **angle = i;
-        /*if (displacement < target)
-            **angle1 = -1 * (**angle1);*/
     }
     /*The first part will be true if we "overshot" the target: the previous was closer to us, but the current is further than the target
-    The second part will be true if we were beyond the target with the previous shot, and the current shot is closer than the target
-    The third (else if) part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target */
-    if ((difference <= 0 && *prev_diff >= 0) || (difference >= 0 && *prev_diff <= 0))
+    The second part will be true if we were beyond the target with the previous shot, and the current shot is closer than the target*/
+    if (((difference <= 0 && *prev_diff >= 0) && *prev_dist > 0) || (difference >= 0 && *prev_diff <= 0))
+    {
         *found = 1;
+        **angle = i;
+    }
+    /*This part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target*/
     else if ((fabs(displacement) <= fabs(*prev_dist) && (difference >= 0 && *prev_diff >= 0)))
+    {
         *found = 2;
-    else if (displacement == start_data.target)
+        **angle = i;
+    }
+    /*This will be true if either we reach exactly the target, or our difference from the target is less than 0.0001 milimeters*/
+    else if (displacement == start_data.target || fabs(displacement-start_data.target) < 0.0000001)
+    {
         *found = 3;
+        **angle = i;
+    }
     *prev_diff = difference;
     *prev_dist = displacement;
-
 }
 
 
@@ -152,52 +158,52 @@ void calculations(starting_data start_data, double *angle1, double *angle2)
     double g = 9.81; /**Gravitational acceleration, required for the calculations**/
     double vterminal = sqrt(start_data.m * g / (rho * Cd * start_data.A * 0.5)); /*The terminal velocity while falling, required for the calculations*/
     double dt = 0.0001; /*A "delta t", timestep which we will use for the numerical calculations. 0.001 is sufficiently small.*/
-    double min = start_data.target, prev_diff = start_data.target, prev_dist=0, delta=0.1;
-    int found = 0;
-    for (int i = 1; found==0; i += 1)
+    double min = start_data.target, prev_diff = start_data.target, prev_dist=0, delta=0.1, first_dist, sec_dist;
+    int main_found = 0, aux_found = 0; /*We need two different variables to signal whether the target has been found, and whether it's one or two angles*/
+    for (int i = 0; main_found==0; i += 1)
     {
-        distance(i, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+        distance(i, start_data, &angle1, &min, &main_found, &prev_diff, &prev_dist);
     }
-    if (found == 1) /*If we found an angle that is not the highest angle*/
+    *angle1 -= 1, delta = 0.1;
+    for (int i = 0; i < 21 && aux_found != 3; i++)
     {
-        found = 0, min = start_data.target;
-        for(int i=(int)fabs(*angle1)+1; found==0; i+=1)
-            distance(i, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
-        printf("%f, %f\n", *angle1, *angle2);
-
-        *angle2 -= 1.1;
-        for (int i = 0; i < 21; i++)
-        {
-            distance(*angle2, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
-            found = 0;
-            while (found == 0)
-            {
-                *angle2 += delta;
-                distance(*angle2, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
-            }
-            *angle2 -= delta;
-            delta /= 10;
-        }
-    }
-    if (found == 2) /*If we did find the highest angle*/
-    {
-        printf("%f\n", *angle1);
-    }
-    *angle1 -= 1;
-    for (int i = 0; i < 21; i++)
-    {   
-        distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
-        found = 0;
-        while (found == 0)
+        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist);
+        aux_found = 0;
+        while (aux_found == 0)
         {
             *angle1 += delta;
-            distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist);
         }
         *angle1 -= delta;
         delta /= 10;
     }
-    if (prev_dist < start_data.target)
-        printf("Unable to reach target, please change some variables!\n");
+    first_dist = prev_dist;
+    if (first_dist < start_data.target && main_found == 2)
+        printf("Unable to reach target, please change some variables!\nCurrently the furthest we can shoot: %f", first_dist);
+    else if (main_found == 2)
+        printf("Only one angle found, %f, with the maximum distance of %f", *angle1, first_dist);
+    if (main_found == 1) /*We found an angle that is not the angle with the longest possible distance, so there is another angle too*/
+    {
+        min = start_data.target, aux_found = 0, prev_dist=-1;
+        for(int i=(int)*angle1+1; aux_found==0; i+=1)
+            distance(i, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist);
+        printf("%f, %f\n", *angle1, *angle2);
+        *angle2 -= 1, delta = 0.1;
+        for (int i = 0; i < 21 && aux_found!=3; i++)
+        {
+            distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist);
+            aux_found = 0;
+            while (aux_found == 0)
+            {
+                *angle2 += delta;
+                distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist);
+            }
+            *angle2 -= delta;
+            delta /= 10;
+        }
+        printf("The two angles: %f, %f", *angle1, *angle2);
+    }
+
 }
 
 
