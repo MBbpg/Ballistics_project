@@ -10,7 +10,7 @@ typedef struct {
     double v0; /**The starting velocity, we will ask the user to enter it**/
     double m; /**The mass of the projectile, we will ask the user to enter it**/
     double A; /**The cross sectional area of the projectile, we will ask the user to enter it**/
-} starting_data;
+} starting_data; /*The only purpose is to make utilizing this data in functions easier*/
 
 int sure(void) /**A function that asks the user whether or not he wants to commit (like when he wants to exit or launch the calculations)**/
 {
@@ -133,10 +133,12 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
     /*The first part will be true if we "overshot" the target: the previous was closer to us, but the current is further than the target
     The second part will be true if we were beyond the target with the previous shot, and the current shot is closer than the target
     The third (else if) part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target */
-    if ((difference < 0 && *prev_diff >= 0) || (difference >= 0 && *prev_diff < 0))
+    if ((difference <= 0 && *prev_diff >= 0) || (difference >= 0 && *prev_diff <= 0))
         *found = 1;
     else if ((fabs(displacement) <= fabs(*prev_dist) && (difference >= 0 && *prev_diff >= 0)))
         *found = 2;
+    else if (displacement == start_data.target)
+        *found = 3;
     *prev_diff = difference;
     *prev_dist = displacement;
 
@@ -163,17 +165,17 @@ void calculations(starting_data start_data, double *angle1, double *angle2)
             distance(i, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
         printf("%f, %f\n", *angle1, *angle2);
 
-        *angle2 -= 1;
+        *angle2 -= 1.1;
         for (int i = 0; i < 21; i++)
         {
-            distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+            distance(*angle2, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
             found = 0;
             while (found == 0)
             {
-                *angle1 += delta;
-                distance(*angle1, start_data, &angle1, &min, &found, &prev_diff, &prev_dist);
+                *angle2 += delta;
+                distance(*angle2, start_data, &angle2, &min, &found, &prev_diff, &prev_dist);
             }
-            *angle1 -= delta;
+            *angle2 -= delta;
             delta /= 10;
         }
     }
