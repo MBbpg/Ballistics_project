@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS /**To avoid warnings in Visual Studio**/
+#define _CRT_SECURE_NO_WARNINGS /**To avoid some of the warnings in Visual Studio**/
 #define _USE_MATH_DEFINES /*To use the M_PI from math.h*/
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +6,7 @@
 
 /*For displaying the trajectory*/
 #define WIDTH 80
-#define HEIGHT 24
+#define HEIGHT 25
 
 typedef struct {
     double target; /*The distance of the target, we will ask the user to enter it*/
@@ -21,7 +21,8 @@ typedef struct {
     int y;
 } trajectory_point; /*A point in the trajectory will have this type*/
 
-int sure(void) /**A function that asks the user whether or not he wants to commit (like when he wants to exit or launch the calculations)**/
+/**A function that asks the user whether or not he wants to commit (like when he wants to exit or launch the calculations)**/
+int sure(void) 
 {
     int choice, end = 0; /**The variable that stores the users choice, and the variable that keeps the algorithm running until
     the user inputs a valid choice**/
@@ -41,15 +42,17 @@ int sure(void) /**A function that asks the user whether or not he wants to commi
     }
 }
 
-double read_data(void) /*A function that will be used to read in the data from the user necessary for calculations*/
+/*A function that will be used to read in the data from the user necessary for calculations*/
+double read_data(void) 
 {
     double data = 0;
     scanf("%lf", &data);
     return data;
 }
 
-double is_positive() /*We will use this function to check whether or not the value is positive, and if it is not, we prompt the user
-                                to enter another value until the user enters a positive one. That positive value then gets returned.*/
+/*We will use this function to check whether or not the entered value is positive, and if it is not, we prompt the user
+to enter another value until the user enters a positive one. That positive value then gets returned.*/
+double is_positive()
 {   
     double data = read_data();
     while (1)
@@ -65,18 +68,56 @@ double is_positive() /*We will use this function to check whether or not the val
     return data;
 }
 
-/*Our function for displaying a trajectory*/
-void display_trajectory(char **grid) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
+/*A function for displaying a trajectory*/
+void display_trajectory(char **grid) 
+{
+    for (int i = 0; i < HEIGHT; i++) 
+    {
+        for (int j = 0; j < WIDTH; j++) 
+        {
             printf("%c", grid[i][j]);
         }
         printf("\n");
     }
 }
 
-/*This large function has two main purposes: Firstly, it calculates the angle for the given distance using physics, then it updates the "found" variable, 
-telling us the relation between the current shot, and the previous one, so that we can identify whether it's the first angle, the second, or the only one */
+/*A function for writing out the necessary data into a txt file - it will append to the end of the file or create a new one*/
+void file_write(char **grid, double angle1, double angle2, starting_data start_data) 
+{
+    FILE* fp;
+    int status;
+    fp = fopen("Ballistics .txt", "a"); 
+    if (fp == NULL) 
+    {
+        printf("Error! Failed to create file!\n");
+        return;
+    }
+    fprintf(fp, "The angle(s): %f", angle1);
+    if (angle2 != 0)
+        fprintf(fp, ", %f", angle2);
+    fprintf(fp, "\nThe starting data:\nDistance to target: %f\nSpeed of wind: %f\nMass of projectile: %f\nCross-sectional area: %f\nMuzzle velocity: %f\n", start_data.target, start_data.wind, start_data.m, start_data.A, start_data.v0);
+    fprintf(fp, "The trajectory/trajectories:\n");
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            fprintf(fp, "%c", grid[i][j]);
+        }
+        fprintf(fp, "\n");
+    }
+    fprintf(fp, "\n");
+    status = fclose(fp); 
+    if (status != 0)
+    {
+        printf("Error! Failed to close file!\n");
+        return;
+    }
+
+}
+
+/*This large function has three main purposes: Firstly, it calculates the angle for the given distance using physics, then it fills up the grid for printing,
+and finally it updates the "found" variable, telling us the relation between the current shot,
+and the previous one, so that we can identify whether it's the first angle, the second, or the only one*/
 void distance(double i, starting_data start_data, double **angle, double *min, int *found, double *prev_diff, double *prev_dist, double *h_max, double *dist_max, int print, char **grid)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
@@ -88,13 +129,14 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
     double drag, h, htop, hterm, ttop, tland, vx, vy, acc, displacement, difference, t;
     h = 0, htop = 0, hterm = 0, ttop = 0, tland = 0, vx = start_data.v0 * cos(i * M_PI / 180), vy = start_data.v0 * sin(i * M_PI / 180), displacement = 0, difference = 0, t = 0;
     while (tland == 0)
-    {
+    {   
         if (h < 0) /*If during falling we encounter a negative height, we have touched the ground*/
             tland = t;
         t += dt;
         if (i == 0)/*Launching at 0 degrees means we land basically instantly*/
             tland = t;
-        if (vy > 0 && ttop == 0) /*This runs until the projectile gets slowed down below 0*/
+        /*Calculating the velocity along the y axis*/
+        if (vy > 0 && ttop == 0) /*This runs until the projectile gets slowed down below 0 - at the top of the trajectory*/
         {
             drag = rho * Cd * start_data.A * 0.5 * pow(vy, 2);
             acc = -1 * (g + drag / start_data.m); /*The acceleration is calculated from the sum of the gravitational acc. and the acc. from the drag force*/
@@ -105,7 +147,7 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
         {
             ttop = t;
             htop = h;
-            if(print!=1)
+            if(print!=1)/*When we are printing the graph we don't want to modify this*/
                 *h_max = h;
             vy = 0;
         }
@@ -116,7 +158,7 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
             vy += acc * dt;
             h -= vy * dt;
             if (acc < 0.000001)/*If we reach an acceleration of 0.000001, we are safe to say that we have reached a point where further acceleration is negligible - from there
-                               the change in speed is so little, that we can ignore that*/
+                               the change in speed is so little, that we can ignore that (we would almost never reach 0 due to how velocity and drag affect each other)*/
             {
                 hterm = h;
             }
@@ -125,21 +167,20 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
         {
             h -= vterminal * dt;
         }
-
-        
-            drag = rho * Cd * start_data.A * 0.5 * pow(vx - start_data.wind, 2);/*We need to subtract the wind, because
-                                                        the user enters a negative value in case of headwind,
-                                                        and a positive in the case of tailwind. However if there is a headwind,
-                                                        our relative velocity to the wind adds up, and with a tailwind it gets subtracted from the velocity of the wind*/
-            acc = -1 * drag / start_data.m;
-            vx += acc * dt;
-            displacement += vx * dt;
-            if (print != 1)
-                if (displacement > *dist_max)
-                    *dist_max = displacement;
-        
+        /*Velocity along the x axis*/
+        drag = rho * Cd * start_data.A * 0.5 * pow(vx - start_data.wind, 2);/*We need to subtract the wind, because
+                                                    the user enters a negative value in case of headwind,
+                                                    and a positive in the case of tailwind. However if there is a headwind,
+                                                    our relative velocity to the wind adds up, and with a tailwind it gets subtracted from the velocity of the wind*/
+        acc = -1 * drag / start_data.m;
+        vx += acc * dt;
+        displacement += vx * dt;
+        if (print != 1)/*When we are printing the graph we don't want to modify this*/
+            if (displacement > *dist_max)
+                *dist_max = displacement;
+        /*We only want to fill our array at certain calls of this function, but when that happens, this part deals with it*/
         if (print == 1)
-        {
+        {   /*For displaying we scale down the trajectory with the maximal distance and height to fit into the width and length of display*/
             trajectory.x = (int)(displacement / *dist_max * WIDTH);
             trajectory.y = HEIGHT - (int)(h / *h_max * HEIGHT);
             if (trajectory.y == HEIGHT) /*Dealing with projectiles flying very low - could happen with low angles*/
@@ -148,6 +189,7 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
                 grid[trajectory.y][trajectory.x] = '*';
         }
     }
+    /*These will be used to calculate wether or not we find an optimal angle, and the "type" of the shot: is it the only one, or is there another?*/
     difference = start_data.target - displacement;
     if (fabs(difference) < *min )
     {
@@ -160,14 +202,14 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
         *found = 1;
         **angle = i;
     }
-    /*This part will be true if we reached the maximum distance, and both the current and previous shots are closer than the target*/
+    /*This part will be true if we reached the maximum distance, as both the current and previous shots are closer than the target*/
     else if ((fabs(displacement) <= fabs(*prev_dist) && (difference >= 0 && *prev_diff >= 0)))
     {
         *found = 2;
         **angle = i;
     }
     /*This will be true if either we reach exactly the target, or our difference from the target is less than 1 milimeters - only gets used in the more precise calculations (as until then
-    found will either be 0, 1 or 2*/
+    "found" will either be 0, 1 or 2 due to the else-if structure*/
     else if (displacement == start_data.target || fabs(displacement-start_data.target) < 0.001)
     {
         *found = 3;
@@ -181,18 +223,22 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
 The printing functions will also be called here*/
 void calculations(starting_data start_data, double* angle1, double* angle2)
 {
-    /*This will store our grid that we plan on printing*/
+    /*This will store our grid that we plan on printing. We check whether we have enough memory for it*/
     char** grid = (char**)malloc(HEIGHT * sizeof(char*));
-    if (grid == NULL) {
+    if (grid == NULL) 
+    {
         printf("Error! Insufficient memory!\n");
         return;
     }
-    else {
-        for (int i = 0; i < HEIGHT; i++) {
+    else 
+    {
+        for (int i = 0; i < HEIGHT; i++) 
+        {
             grid[i] = (char*)malloc(WIDTH * sizeof(char));
             if (grid[i] == NULL) {
                 printf("Error! Insufficient memory!\n");
-                for (int j = 0; j < i; j++) {
+                for (int j = 0; j < i; j++) 
+                {
                     free(grid[j]);
                 }
                 free(grid);
@@ -200,77 +246,85 @@ void calculations(starting_data start_data, double* angle1, double* angle2)
             }
         }
     }
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < WIDTH; j++) {
-                grid[i][j] = ' ';
-            }
-        }
-        double min = start_data.target, prev_diff = start_data.target, prev_dist = 0, delta = 0.1, first_dist = 0, h_max1 = 0, h_max2 = 0, h_max = 0, dist_max1 = 0, dist_max2 = 0, dist_max = 0;
-        int main_found = 0, aux_found = 0, counter=0; /*We need two different variables to signal whether the target has been found, and whether it's one or two angles*/
-        for (int i = 0; main_found == 0; i += 1)
+    for (int i = 0; i < HEIGHT; i++) 
+    {
+        for (int j = 0; j < WIDTH; j++) 
         {
-            distance(i, start_data, &angle1, &min, &main_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+            grid[i][j] = ' ';
         }
-        *angle1 -= 1, delta = 0.1;
+    }
+    double min = start_data.target, prev_diff = start_data.target, prev_dist = 0, delta = 0.1, first_dist = 0, h_max1 = 0, h_max2 = 0, h_max = 0, dist_max1 = 0, dist_max2 = 0, dist_max = 0;
+    int main_found = 0, aux_found = 0, counter=0; /*We need two different variables to signal whether the target has been found, and whether it's one or two angles, plus we need a counter*/
+    /*Here we find the first angle*/
+    for (int i = 0; main_found == 0; i += 1)
+    {
+        distance(i, start_data, &angle1, &min, &main_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+    }
+    /*Now we calculate it to be more precise*/
+    *angle1 -= 1, delta = 0.1;
+    for (int i = 0; i < 10 && aux_found != 3; i++)
+    {
+        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+        aux_found = 0, dist_max1 = 0, counter = 0;
+        while (aux_found == 0 && counter < 11)
+        {
+            *angle1 += delta;
+            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+        }
+        *angle1 -= delta;
+        delta /= 10;
+    }
+    first_dist = prev_dist;
+    if (first_dist < start_data.target && main_found == 2)    /*Checking whether this angle with the data is enough or not*/
+    {
+        printf("Unable to reach target, please change some variables!\nCurrently the furthest we can shoot: %f\n", first_dist);
+        return;
+    }
+    else if (main_found == 2)     /*There is only one angle, but we can reach the target*/
+    {
+        printf("Only one angle found, %f, with the maximum distance of %f\n", *angle1, first_dist);
+        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 1, grid);
+        display_trajectory(grid);
+    }
+    else /*There are two angles, and this is the first one*/
+    {
+        printf("The first angle is %f, ", *angle1);
+    }
+    if (main_found == 1) /*Calculating the second angle if it exists*/
+    {
+        min = start_data.target, aux_found = 0, prev_dist = -1;
+        for (int i = (int)*angle1 + 1; aux_found == 0; i += 1)
+            distance(i, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
+        /*Precision calculations*/
+        *angle2 -= 1, delta = 0.1;
         for (int i = 0; i < 10 && aux_found != 3; i++)
         {
-            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
-            aux_found = 0, dist_max1 = 0, counter = 0;
+            distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
+            aux_found = 0, dist_max2 = 0, counter = 0;
             while (aux_found == 0 && counter < 11)
             {
-                *angle1 += delta;
-                distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+                *angle2 += delta;
+                distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
             }
-            *angle1 -= delta;
+            *angle2 -= delta;
             delta /= 10;
         }
-        first_dist = prev_dist;
-        if (first_dist < start_data.target && main_found == 2)
-        {
-            printf("Unable to reach target, please change some variables!\nCurrently the furthest we can shoot: %f\n", first_dist);
-            return;
-        }
-        else if (main_found == 2) /*There is only one angle, but we can reach the target*/
-        {
-            printf("Only one angle found, %f, with the maximum distance of %f\n", *angle1, first_dist);
-            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 1, grid);
-            display_trajectory(grid);
-        }
-        else /*There are two angles, and this is the first one*/
-        {
-            printf("The first angle is %f, ", *angle1);
-        }
-        if (main_found == 1) /*We found an angle that is not the angle with the longest possible distance, so there is another angle too*/
-        {
-            min = start_data.target, aux_found = 0, prev_dist = -1;
-            for (int i = (int)*angle1 + 1; aux_found == 0; i += 1)
-                distance(i, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
-            *angle2 -= 1, delta = 0.1;
-            for (int i = 0; i < 10 && aux_found != 3; i++)
-            {
-                distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
-                aux_found = 0, dist_max2 = 0, counter = 0;
-                while (aux_found == 0 && counter < 11)
-                {
-                    *angle2 += delta;
-                    distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
-                }
-                *angle2 -= delta;
-                delta /= 10;
-            }
-            printf("the second is %f\n", *angle2);
-        }
-        h_max = fmax(h_max1, h_max2);
-        dist_max = fmax(dist_max1, dist_max2);
-        if(main_found == 1)
-            distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
-        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
-        display_trajectory(grid);
-        for (int i = 0; i < HEIGHT; i++) {
-            free(grid[i]);
-        }
-        free(grid);
-
+        printf("the second is %f\n", *angle2);
+    }
+    /*Printing the trajectories to the main screen*/
+    h_max = fmax(h_max1, h_max2);
+    dist_max = fmax(dist_max1, dist_max2);
+    if(main_found == 1)
+        distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
+    distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
+    display_trajectory(grid);
+    file_write(grid, *angle1, *angle2, start_data);
+    /*Freeing our dynamic 2D array when it's no longer needed*/
+    for (int i = 0; i < HEIGHT; i++) 
+    {
+        free(grid[i]);
+    }
+    free(grid);
 }
 
 
