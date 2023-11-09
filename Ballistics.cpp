@@ -95,7 +95,7 @@ void file_write(char **grid, double angle1, double angle2, starting_data start_d
     fprintf(fp, "The angle(s): %f", angle1);
     if (angle2 != 0)
         fprintf(fp, ", %f", angle2);
-    fprintf(fp, "\nThe starting data:\nDistance to target: %f\nSpeed of wind: %f\nMass of projectile: %f\nCross-sectional area: %f\nMuzzle velocity: %f\n", start_data.target, start_data.wind, start_data.m, start_data.A, start_data.v0);
+    fprintf(fp, "\nThe starting data:\nDistance to target: %f m\nSpeed of wind: %f m/s\nMass of projectile: %f kg\nCross-sectional area: %f m^2\nMuzzle velocity: %f m/s\n", start_data.target, start_data.wind, start_data.m, start_data.A, start_data.v0);
     fprintf(fp, "The trajectory/trajectories:\n");
     for (int i = 0; i < HEIGHT; i++)
     {
@@ -105,7 +105,7 @@ void file_write(char **grid, double angle1, double angle2, starting_data start_d
         }
         fprintf(fp, "\n");
     }
-    fprintf(fp, "\n");
+    fprintf(fp, "\n\n");
     status = fclose(fp); 
     if (status != 0)
     {
