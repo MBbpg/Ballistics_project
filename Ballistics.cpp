@@ -82,7 +82,7 @@ void display_trajectory(char **grid)
 }
 
 /*A function for writing out the necessary data into a txt file - it will append to the end of the file or create a new one*/
-void file_write(char **grid, double angle1, double angle2, starting_data start_data) 
+void file_write(char **grid, double angle1, double angle2, starting_data start_data, double time) 
 {
     FILE* fp;
     int status;
@@ -95,6 +95,7 @@ void file_write(char **grid, double angle1, double angle2, starting_data start_d
     fprintf(fp, "The angle(s): %f", angle1);
     if (angle2 != 0)
         fprintf(fp, ", %f", angle2);
+    fprintf(fp, "\nThe time of flight: %f s", time);
     fprintf(fp, "\nThe starting data:\nDistance to target: %f m\nSpeed of wind: %f m/s\nMass of projectile: %f kg\nCross-sectional area: %f m^2\nMuzzle velocity: %f m/s\n", start_data.target, start_data.wind, start_data.m, start_data.A, start_data.v0);
     fprintf(fp, "The trajectory/trajectories:\n");
     for (int i = 0; i < HEIGHT; i++)
@@ -118,7 +119,7 @@ void file_write(char **grid, double angle1, double angle2, starting_data start_d
 /*This large function has three main purposes: Firstly, it calculates the angle for the given distance using physics, then it fills up the grid for printing,
 and finally it updates the "found" variable, telling us the relation between the current shot,
 and the previous one, so that we can identify whether it's the first angle, the second, or the only one*/
-void distance(double i, starting_data start_data, double **angle, double *min, int *found, double *prev_diff, double *prev_dist, double *h_max, double *dist_max, int print, char **grid)
+void distance(double i, starting_data start_data, double **angle, double *min, int *found, double *prev_diff, double *prev_dist, double *h_max, double *dist_max, int print, char **grid, double *time)
 {
     double rho = 1.293; /**The density of air, required for the calculations**/
     double Cd = 0.295; /**The drag coefficient of a sphere, required for the calculations**/
@@ -189,6 +190,7 @@ void distance(double i, starting_data start_data, double **angle, double *min, i
                 grid[trajectory.y][trajectory.x] = '*';
         }
     }
+    *time = t;
     /*These will be used to calculate wether or not we find an optimal angle, and the "type" of the shot: is it the only one, or is there another?*/
     difference = start_data.target - displacement;
     if (fabs(difference) < *min )
@@ -253,23 +255,23 @@ void calculations(starting_data start_data, double* angle1, double* angle2)
             grid[i][j] = ' ';
         }
     }
-    double min = start_data.target, prev_diff = start_data.target, prev_dist = 0, delta = 0.1, first_dist = 0, h_max1 = 0, h_max2 = 0, h_max = 0, dist_max1 = 0, dist_max2 = 0, dist_max = 0;
+    double min = start_data.target, prev_diff = start_data.target, prev_dist = 0, delta = 0.1, first_dist = 0, h_max1 = 0, h_max2 = 0, h_max = 0, dist_max1 = 0, dist_max2 = 0, dist_max = 0, time=0;
     int main_found = 0, aux_found = 0, counter=0; /*We need two different variables to signal whether the target has been found, and whether it's one or two angles, plus we need a counter*/
     /*Here we find the first angle*/
     for (int i = 0; main_found == 0; i += 1)
     {
-        distance(i, start_data, &angle1, &min, &main_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+        distance(i, start_data, &angle1, &min, &main_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid, &time);
     }
     /*Now we calculate it to be more precise*/
     *angle1 -= 1, delta = 0.1;
     for (int i = 0; i < 10 && aux_found != 3; i++)
     {
-        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid, &time);
         aux_found = 0, dist_max1 = 0, counter = 0;
         while (aux_found == 0 && counter < 11)
         {
             *angle1 += delta;
-            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid);
+            distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 0, grid, &time);
         }
         *angle1 -= delta;
         delta /= 10;
@@ -283,7 +285,7 @@ void calculations(starting_data start_data, double* angle1, double* angle2)
     else if (main_found == 2)     /*There is only one angle, but we can reach the target*/
     {
         printf("Only one angle found, %f, with the maximum distance of %f\n", *angle1, first_dist);
-        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 1, grid);
+        distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max1, &dist_max1, 1, grid, &time);
         display_trajectory(grid);
     }
     else /*There are two angles, and this is the first one*/
@@ -294,17 +296,17 @@ void calculations(starting_data start_data, double* angle1, double* angle2)
     {
         min = start_data.target, aux_found = 0, prev_dist = -1;
         for (int i = (int)*angle1 + 1; aux_found == 0; i += 1)
-            distance(i, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
+            distance(i, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid, &time);
         /*Precision calculations*/
         *angle2 -= 1, delta = 0.1;
         for (int i = 0; i < 10 && aux_found != 3; i++)
         {
-            distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
+            distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid, &time);
             aux_found = 0, dist_max2 = 0, counter = 0;
             while (aux_found == 0 && counter < 11)
             {
                 *angle2 += delta;
-                distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid);
+                distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max2, &dist_max2, 0, grid, &time);
             }
             *angle2 -= delta;
             delta /= 10;
@@ -315,10 +317,10 @@ void calculations(starting_data start_data, double* angle1, double* angle2)
     h_max = fmax(h_max1, h_max2);
     dist_max = fmax(dist_max1, dist_max2);
     if(main_found == 1)
-        distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
-    distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid);
+        distance(*angle2, start_data, &angle2, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid, &time);
+    distance(*angle1, start_data, &angle1, &min, &aux_found, &prev_diff, &prev_dist, &h_max, &dist_max, 1, grid, &time);
     display_trajectory(grid);
-    file_write(grid, *angle1, *angle2, start_data);
+    file_write(grid, *angle1, *angle2, start_data, time);
     /*Freeing our dynamic 2D array when it's no longer needed*/
     for (int i = 0; i < HEIGHT; i++) 
     {

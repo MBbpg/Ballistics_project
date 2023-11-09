@@ -1,0 +1,246 @@
+The angle(s): 23.710000, 57.061500
+The starting data:
+Distance to target: 360.000000 m
+Speed of wind: 0.000000 m/s
+Mass of projectile: 12.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 100.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                       ****************                         
+                                   *****              ****                      
+                                ****                     ***                    
+                              ***                          ***                  
+                            ***                              **                 
+                          ***                                 ***               
+                        ***                                     **              
+                      ***                                        **             
+                    ***                                           **            
+                   **                                              **           
+                 ***                                                **          
+                **                                                   **         
+              ***                                                     **        
+             **                                                        **       
+           ***                                                          **      
+          **                                                             *      
+         **                          ************************            **     
+        **                    ********                      *****         **    
+      ***                ******                                 *****      **   
+     **             ******                                          ***     *   
+    **         ******                                                 ***   **  
+   **      *****                                                        ***  ** 
+  **   *****                                                              *** * 
+********                                                                    ****
+
+
+The angle(s): 23.710000, 57.061500
+The starting data:
+Distance to target: 360.000000 m
+Speed of wind: 0.000000 m/s
+Mass of projectile: 12.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 100.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                       ****************                         
+                                   *****              ****                      
+                                ****                     ***                    
+                              ***                          ***                  
+                            ***                              **                 
+                          ***                                 ***               
+                        ***                                     **              
+                      ***                                        **             
+                    ***                                           **            
+                   **                                              **           
+                 ***                                                **          
+                **                                                   **         
+              ***                                                     **        
+             **                                                        **       
+           ***                                                          **      
+          **                                                             *      
+         **                          ************************            **     
+        **                    ********                      *****         **    
+      ***                ******                                 *****      **   
+     **             ******                                          ***     *   
+    **         ******                                                 ***   **  
+   **      *****                                                        ***  ** 
+  **   *****                                                              *** * 
+********                                                                    ****
+
+
+The angle(s): 0.027000, 83.118000
+The starting data:
+Distance to target: 1.000000 m
+Speed of wind: -20.000000 m/s
+Mass of projectile: 12.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 100.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                                                            ****
+                                                                         *****  
+                                                                      ****      
+                                                                   ****         
+                                                                ****            
+                                                            *****               
+                                                         *****                  
+                                                      *****                     
+                                                  ******                        
+                                               ******                           
+                                            ******                              
+                                        *******                                 
+                                     *******                                    
+                                  *******                                       
+                              ********                                          
+                           ********                                             
+                        ********                                                
+                     ********                                                   
+                  ********                                                      
+               *******                                                          
+           ********                                                             
+        ********                                                                
+     ********                                                                   
+**********                                                                      
+
+
+The angle(s): 11.349000, 73.390600
+The starting data:
+Distance to target: 250.000000 m
+Speed of wind: 0.000000 m/s
+Mass of projectile: 12.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 100.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                   ****************                             
+                               *****              *****                         
+                            ****                      ***                       
+                          ***                           ***                     
+                        ***                               **                    
+                      ***                                  ***                  
+                    ***                                      **                 
+                   **                                         ***               
+                 ***                                            **              
+                **                                               **             
+              ***                                                 **            
+             **                                                    **           
+            **                                                      **          
+          ***                                                        **         
+         **                                                           **        
+        **                                                             **       
+       **                                                               **      
+      **                                                                 **     
+     **                                                                   **    
+    **                                                                     **   
+   **                                                                       *   
+  **                                                                        **  
+ **                                  ********************                    ** 
+**************************************                  ************************
+
+
+The angle(s): 23.710000, 57.061500The time of flight: 7.354100
+The starting data:
+Distance to target: 360.000000 m
+Speed of wind: 0.000000 m/s
+Mass of projectile: 12.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 100.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                       ****************                         
+                                   *****              ****                      
+                                ****                     ***                    
+                              ***                          ***                  
+                            ***                              **                 
+                          ***                                 ***               
+                        ***                                     **              
+                      ***                                        **             
+                    ***                                           **            
+                   **                                              **           
+                 ***                                                **          
+                **                                                   **         
+              ***                                                     **        
+             **                                                        **       
+           ***                                                          **      
+          **                                                             *      
+         **                          ************************            **     
+        **                    ********                      *****         **    
+      ***                ******                                 *****      **   
+     **             ******                                          ***     *   
+    **         ******                                                 ***   **  
+   **      *****                                                        ***  ** 
+  **   *****                                                              *** * 
+********                                                                    ****
+
+
+The angle(s): 0.975600, 83.907120The time of flight: 1.729700
+The starting data:
+Distance to target: 500.000000 m
+Speed of wind: -10.000000 m/s
+Mass of projectile: 20.000000 kg
+Cross-sectional area: 0.200000 m^2
+Muzzle velocity: 500.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                          ******************                    
+                                     ******                ***                  
+                                  ****                       ***                
+                               ****                            ***              
+                            ****                                 **             
+                          ***                                     **            
+                       ****                                        ***          
+                     ***                                             **         
+                   ***                                                *         
+                 ***                                                  **        
+               ***                                                     **       
+              **                                                        **      
+            ***                                                          **     
+           **                                                             *     
+         ***                                                              **    
+        **                                                                 *    
+       **                                                                  **   
+      **                                                                    **  
+     **                                                                      *  
+    **                                                                       *  
+   **                                                                        ** 
+  **                                                                          * 
+ **                                                                           **
+********************************************************************************
+
+
+The angle(s): 9.377200, 78.149800
+The time of flight: 4.935700 s
+The starting data:
+Distance to target: 600.000000 m
+Speed of wind: 0.000000 m/s
+Mass of projectile: 30.000000 kg
+Cross-sectional area: 0.100000 m^2
+Muzzle velocity: 150.000000 m/s
+The trajectory/trajectories:
+                                                                                
+                                *****************                               
+                             ****               ****                            
+                          ****                     ****                         
+                        ***                           ***                       
+                      ***                               ***                     
+                    ***                                   **                    
+                   **                                      ***                  
+                 ***                                         **                 
+                **                                            ***               
+              ***                                               **              
+             **                                                  **             
+            **                                                    **            
+           **                                                      **           
+          **                                                        **          
+        ***                                                          **         
+       **                                                             **        
+      **                                                               **       
+     **                                                                 **      
+     *                                                                   **     
+    **                                                                    **    
+   **                                                                      **   
+  **                                                                        **  
+ **                                                                          ** 
+********************************************************************************
+
+
