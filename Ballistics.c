@@ -43,7 +43,7 @@ int sure(void)
 }
 
 /*A function that will be used to read in the data from the user necessary for calculations*/
-double read_data(void) 
+double read_data(void)
 {
     double data = 0;
     scanf("%lf", &data);
@@ -53,7 +53,7 @@ double read_data(void)
 /*We will use this function to check whether or not the entered value is positive, and if it is not, we prompt the user
 to enter another value until the user enters a positive one. That positive value then gets returned.*/
 double is_positive()
-{   
+{
     double data = read_data();
     while (1)
     {
